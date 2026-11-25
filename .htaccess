@@ -1,0 +1,42 @@
+# Pas de listing des dossiers
+Options -Indexes
+
+# Redirection HTTP -> HTTPS (méthode recommandée par OVH sur hébergement mutualisé)
+RewriteEngine On
+RewriteCond %{SERVER_PORT} 80
+RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+
+# Bloquer l'accès aux fichiers cachés (.git, .env, etc.)
+RewriteCond %{REQUEST_URI} !^/\.well-known/
+RewriteRule (^|/)\. - [F]
+
+# Site 100 % statique : aucun fichier PHP ne doit pouvoir s'exécuter.
+# Si un script est déposé un jour sur l'hébergement, il renverra une erreur 403.
+<FilesMatch "\.(php[0-9]?|phtml|phar|pl|py|cgi|sh)$">
+  Require all denied
+</FilesMatch>
+
+# Fichiers du dépôt qui n'ont pas à être servis (README, etc.)
+<FilesMatch "\.(md|ya?ml|lock|log)$">
+  Require all denied
+</FilesMatch>
+
+# En-têtes de sécurité
+<IfModule mod_headers.c>
+  Header always set Strict-Transport-Security "max-age=31536000"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "DENY"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), interest-cohort=()"
+  Header always set Content-Security-Policy "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; font-src 'self'; connect-src 'none'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'none'"
+</IfModule>
+
+# Cache des ressources statiques
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css "access plus 1 month"
+  ExpiresByType application/javascript "access plus 1 month"
+  ExpiresByType font/woff2 "access plus 1 year"
+  ExpiresByType image/jpeg "access plus 1 month"
+  ExpiresByType image/webp "access plus 1 month"
+</IfModule>
